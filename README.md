@@ -54,7 +54,7 @@ An AI-powered image generator with a sleek, dark-themed interface — built for 
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js / React |
+| Framework | React |
 | AI Model | Gemini Flash Image (`gemini-2.5-flash-image`) |
 | AI SDK | `@google/genai` |
 | Styling | Tailwind CSS |
