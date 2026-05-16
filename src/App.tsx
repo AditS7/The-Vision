@@ -3,15 +3,6 @@ import { GoogleGenAI } from '@google/genai';
 import { Loader2, Sparkles, Download, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-let processEnvApiKey = "";
-try {
-  processEnvApiKey = process.env.GEMINI_API_KEY as string;
-} catch (e) {
-  console.error("Could not find process.env.GEMINI_API_KEY", e);
-}
-
-const ai = new GoogleGenAI({ apiKey: processEnvApiKey });
-
 type AspectRatio = '1:1' | '16:9' | '9:16' | '4:3' | '3:4';
 
 const RATIOS: { id: AspectRatio; label: string; icon: React.ReactNode }[] = [
@@ -70,6 +61,19 @@ export default function App() {
     setIsGenerating(true);
     setError(null);
     try {
+      let apiKey = "";
+      try {
+        // @ts-ignore
+        apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : "");
+      } catch (e) {
+        console.error(e);
+      }
+      
+      if (!apiKey) {
+        throw new Error("API key is missing. Please set VITE_GEMINI_API_KEY in your Vercel environment variables.");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: {
