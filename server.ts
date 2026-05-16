@@ -34,6 +34,7 @@ async function startServer() {
       const blob = await hf.textToImage({
         model: "black-forest-labs/FLUX.1-schnell",
         inputs: finalPrompt,
+        provider: "hf-inference" // Force free inference API
       });
 
       const buffer = await blob.arrayBuffer();

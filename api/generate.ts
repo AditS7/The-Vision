@@ -24,6 +24,7 @@ export default async function handler(req: any, res: any) {
     const blob = await hf.textToImage({
       model: "black-forest-labs/FLUX.1-schnell",
       inputs: finalPrompt,
+      provider: "hf-inference" // Force free inference API, avoid third party provider credit limits
     });
 
     const buffer = await blob.arrayBuffer();
