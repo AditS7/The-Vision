@@ -70,11 +70,12 @@ export default function App() {
 
       if (!response.ok) {
         let errorMsg = "Generation failed";
+        const textData = await response.text();
         try {
-          const errData = await response.json();
+          const errData = JSON.parse(textData);
           errorMsg = errData.error || errorMsg;
         } catch {
-          errorMsg = await response.text();
+          errorMsg = textData || errorMsg;
         }
         throw new Error(errorMsg);
       }
