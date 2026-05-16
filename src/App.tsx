@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { Loader2, Sparkles, Download, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -61,47 +60,28 @@ export default function App() {
     setIsGenerating(true);
     setError(null);
     try {
-      let apiKey = "";
-      try {
-        // @ts-ignore
-        apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== 'undefined' ? process.env.GEMINI_API_KEY : "");
-      } catch (e) {
-        console.error(e);
-      }
-      
-      if (!apiKey) {
-        throw new Error("API key is missing. Please set VITE_GEMINI_API_KEY in your Vercel environment variables.");
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
-          parts: [
-            { text: prompt }
-          ]
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        config: {
-          imageConfig: {
-            aspectRatio: aspectRatio,
-          }
-        }
+        body: JSON.stringify({ prompt, aspectRatio }),
       });
 
-      let foundImage = false;
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData) {
-          const base64EncodeString = part.inlineData.data;
-          const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64EncodeString}`;
-          setGeneratedImage(imageUrl);
-          foundImage = true;
-          break; // Take the first generated image
+      if (!response.ok) {
+        let errorMsg = "Generation failed";
+        try {
+          const errData = await response.json();
+          errorMsg = errData.error || errorMsg;
+        } catch {
+          errorMsg = await response.text();
         }
+        throw new Error(errorMsg);
       }
 
-      if (!foundImage) {
-        throw new Error("No image data found in response.");
-      }
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setGeneratedImage(imageUrl);
     } catch (err: any) {
       console.error('Generation Error:', err);
       setError(err.message || 'An error occurred while generating the image.');
