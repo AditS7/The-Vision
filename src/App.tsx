@@ -60,24 +60,23 @@ export default function App() {
     setIsGenerating(true);
     setError(null);
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt, aspectRatio }),
-      });
+      // Map ratio to width and height
+      let width = 1024;
+      let height = 1024;
+      if (aspectRatio === '16:9') { width = 1024; height = 576; }
+      else if (aspectRatio === '9:16') { width = 576; height = 1024; }
+      else if (aspectRatio === '4:3') { width = 1024; height = 768; }
+      else if (aspectRatio === '3:4') { width = 768; height = 1024; }
+
+      // Use a completely free image generation API (Pollinations.ai)
+      // Generates beautiful images with flux, no API key required!
+      const encodedPrompt = encodeURIComponent(prompt);
+      const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true`;
+      
+      const response = await fetch(url);
 
       if (!response.ok) {
-        let errorMsg = "Generation failed";
-        const textData = await response.text();
-        try {
-          const errData = JSON.parse(textData);
-          errorMsg = errData.error || errorMsg;
-        } catch {
-          errorMsg = textData || errorMsg;
-        }
-        throw new Error(errorMsg);
+        throw new Error("Failed to synthesize the vision.");
       }
 
       const blob = await response.blob();
