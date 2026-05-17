@@ -185,7 +185,7 @@ export default function App() {
                         initial={{ y: "100%", opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
-                        className="text-[8px] font-medium tracking-[0.3em] uppercase text-white/20"
+                        className="text-[10px] sm:text-[12px] font-semibold tracking-[0.2em] uppercase text-white/30 mt-1"
                      >
                         Developed by Adit
                      </motion.p>
