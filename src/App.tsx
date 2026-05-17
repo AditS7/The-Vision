@@ -59,13 +59,19 @@ export default function App() {
 
     setIsGenerating(true);
     setError(null);
+    // remains visible while the new one is synthesizing.
+    
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt, aspectRatio }),
+        body: JSON.stringify({ 
+          prompt, 
+          aspectRatio, 
+          seed: Math.floor(Math.random() * 1000000000) 
+        }),
       });
 
       if (!response.ok) {
@@ -80,13 +86,23 @@ export default function App() {
         throw new Error(errorMsg);
       }
 
-      const blob = await response.blob();
-      const imageUrl = URL.createObjectURL(blob);
-      setGeneratedImage(imageUrl);
+      const data = await response.json();
+
+      if (data.image) {
+        setGeneratedImage(data.image);
+        setIsGenerating(false);
+      } else if (data.fallbackUrl) {
+        const fallbackRes = await fetch(data.fallbackUrl);
+        if (!fallbackRes.ok) throw new Error("Failed to load image from external service.");
+        const blob = await fallbackRes.blob();
+        setGeneratedImage(URL.createObjectURL(blob));
+        setIsGenerating(false);
+      } else {
+        throw new Error("No image generated.");
+      }
     } catch (err: any) {
       console.error('Generation Error:', err);
       setError(err.message || 'An error occurred while generating the image.');
-    } finally {
       setIsGenerating(false);
     }
   };

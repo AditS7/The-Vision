@@ -6,11 +6,16 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { prompt, aspectRatio } = req.body || {};
+    const { prompt, aspectRatio, seed } = req.body || {};
     
     if (!prompt) {
       return res.status(400).json({ error: "Prompt is required" });
     }
+
+    const enhancedPrompt = `${prompt.trim()}, highly detailed, masterpiece, 8k resolution, ultra-detailed, photorealistic`;
+
+    // Default seed
+    const randomSeed = seed || Math.floor(Math.random() * 1000000000);
 
     let resultBuffer: ArrayBuffer | null = null;
     let fallbackUsed = false;
@@ -23,8 +28,12 @@ export default async function handler(req: any, res: any) {
         
         const blob = await hf.textToImage({
           model: "black-forest-labs/FLUX.1-schnell",
-          inputs: prompt,
-          provider: "hf-inference" // Force free inference API
+          inputs: enhancedPrompt,
+          provider: "hf-inference", // Force free inference API
+          parameters: {
+            seed: randomSeed,
+            use_cache: false
+          } as any
         });
         resultBuffer = await blob.arrayBuffer();
       } catch (hfError: any) {
@@ -36,8 +45,6 @@ export default async function handler(req: any, res: any) {
       fallbackUsed = true;
     }
 
-    // Fallback to Pollinations.ai
-    if (!resultBuffer || fallbackUsed) {
       let width = 1024;
       let height = 1024;
       if (aspectRatio === '16:9') { width = 1024; height = 576; }
@@ -45,23 +52,16 @@ export default async function handler(req: any, res: any) {
       else if (aspectRatio === '4:3') { width = 1024; height = 768; }
       else if (aspectRatio === '3:4') { width = 768; height = 1024; }
 
-      const encodedPrompt = encodeURIComponent(prompt);
-      const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true`;
-      
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to generate image from fallback service.");
-      }
-      const blob = await response.blob();
-      resultBuffer = await blob.arrayBuffer();
-    }
+      const encodedPrompt = encodeURIComponent(enhancedPrompt);
+      const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${randomSeed}&nologo=true&enhance=true`;
 
-    if (resultBuffer) {
+    if (resultBuffer && !fallbackUsed) {
       const buffer = Buffer.from(resultBuffer);
-      res.setHeader('Content-Type', 'image/jpeg');
-      res.send(buffer);
+      const base64Image = buffer.toString('base64');
+      res.status(200).json({ image: `data:image/jpeg;base64,${base64Image}` });
     } else {
-      throw new Error("No image generated");
+      // Send fallback URL to the frontend to avoid Vercel 10s Serverless timeout
+      res.status(200).json({ fallbackUrl });
     }
 
   } catch (error: any) {
