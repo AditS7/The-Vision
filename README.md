@@ -56,16 +56,6 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser and start generating.
 
----
-
-## 🚢 Deploying to Vercel
-
-This app is a fully client-side SPA and deploys to Vercel with zero configuration.
-
-1. Push your repo to GitHub
-2. Import the project at [vercel.com/new](https://vercel.com/new)
-3. Optionally add `HF_API_KEY` under **Environment Variables** in the Vercel dashboard
-4. Click **Deploy**
 
 ---
 
@@ -76,7 +66,7 @@ This app is a fully client-side SPA and deploys to Vercel with zero configuratio
 | Framework | React / Next.js |
 | Primary AI Model | FLUX.1-schnell (`black-forest-labs/FLUX.1-schnell`) |
 | Primary AI Provider | [Hugging Face Inference API](https://huggingface.co/inference-api) |
-| Fallback AI Provider | [Pollinations.ai](https://pollinations.ai) (free, no key required) |
+| Fallback AI Provider | [Pollinations.ai](https://pollinations.ai) |
 | Styling | Tailwind CSS |
 | Animations | Motion |
 
@@ -88,19 +78,6 @@ This app is a fully client-side SPA and deploys to Vercel with zero configuratio
 2. Select your preferred aspect ratio (`1:1`, `16:9`, or `9:16`)
 3. Hit **Generate** and watch your vision come to life
 4. Hover over the result and click **Download** to save it
-
----
-
-## 🔁 How the Fallback Works
-
-The app uses **FLUX.1-schnell via Hugging Face** as its primary image generation model — the fastest and highest-quality option. If the Hugging Face API is unavailable (e.g. no key provided, rate limited, or service disruption), the app automatically falls back to **Pollinations.ai**, which requires no configuration and has no usage limits.
-
-| | Hugging Face (Primary) | Pollinations.ai (Fallback) |
-|---|---|---|
-| API Key Required | Yes (free tier available) | No |
-| Model | FLUX.1-schnell | FLUX |
-| Speed | Fast | Fast |
-| Usage Limits | Free tier limits apply | Unlimited |
 
 ---
 
